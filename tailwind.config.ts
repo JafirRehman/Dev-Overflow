@@ -118,7 +118,7 @@ const config: Config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       borderRadius: {
-        lg: "var(--radius)",
+        lg: "8px",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },

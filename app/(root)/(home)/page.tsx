@@ -10,7 +10,6 @@ import { getQuestions } from "@/lib/actions/question.action";
 
 export default async function Home() {
   const { questions } = await getQuestions({});
-  console.log(questions);
 
   return (
     <>

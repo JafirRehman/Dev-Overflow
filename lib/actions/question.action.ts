@@ -35,7 +35,6 @@ export async function createQuestion(params: CreateQuestionParams) {
       content,
       author,
     });
-    console.log(question);
     const tagDocuments = [];
 
     // Create the tags or get them if they already exist

@@ -99,6 +99,7 @@ const Votes = ({
     viewQuestion({
       questionId: JSON.parse(itemId),
       userId: userId ? JSON.parse(userId) : undefined,
+      path: pathname,
     });
   }, [itemId, userId, pathname, router]);
 

@@ -16,6 +16,21 @@ import { revalidatePath } from "next/cache";
 import Answer from "@/database/answer.model";
 import Interaction from "@/database/interaction.model";
 
+export async function getHotQuestions() {
+  try {
+    connectToDatabase();
+
+    const hotQuestions = await Question.find({})
+      .sort({ views: -1, upvotes: -1 })
+      .limit(5);
+
+    return hotQuestions;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
 export async function getQuestions(params: GetQuestionsParams) {
   try {
     connectToDatabase();

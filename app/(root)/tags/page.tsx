@@ -3,10 +3,13 @@ import NoResult from "@/components/shared/NoResult";
 import LocalSearchbar from "@/components/shared/search/LocalSearchbar";
 import { UserFilters } from "@/constants/filters";
 import { getAllTags } from "@/lib/actions/tag.actions";
+import { SearchParamsProps } from "@/types";
 import Link from "next/link";
 
-const Page = async () => {
-  const result = await getAllTags({});
+const Page = async ({ searchParams }: SearchParamsProps) => {
+  const result = await getAllTags({
+    searchQuery: searchParams.q,
+  });
 
   return (
     <>
@@ -35,7 +38,7 @@ const Page = async () => {
               key={tag._id}
               className="shadow-light100_darknone"
             >
-              <article className="background-light900_dark200 light-border flex w-full flex-col rounded-2xl border px-8 py-10 sm:w-[260px]">
+              <div className="background-light900_dark200 light-border flex w-full flex-col rounded-2xl border px-8 py-10 sm:w-[260px]">
                 <div className="background-light800_dark400 w-fit rounded-sm px-5 py-1.5">
                   <p className="paragraph-semibold text-dark300_light900">
                     {tag.name}
@@ -48,7 +51,7 @@ const Page = async () => {
                   </span>{" "}
                   Questions
                 </p>
-              </article>
+              </div>
             </Link>
           ))
         ) : (

@@ -7,7 +7,7 @@ import {
   GetAllTagsParams,
   GetQuestionsByTagIdParams,
 } from "./shared.types";
-import Tag, { ITag } from "@/database/tag.model";
+import Tag from "@/database/tag.model";
 import Question from "@/database/question.model";
 import { FilterQuery } from "mongoose";
 
@@ -55,7 +55,8 @@ export async function getAllTags(params: GetAllTagsParams) {
   try {
     connectToDatabase();
 
-    const { searchQuery, filter } = params;
+    const { searchQuery, filter, page = 1, pageSize = 2 } = params;
+    const skipAmount = (page - 1) * pageSize;
 
     const query: FilterQuery<typeof Tag> = {};
 
@@ -67,25 +68,32 @@ export async function getAllTags(params: GetAllTagsParams) {
 
     switch (filter) {
       case "popular":
-        sortOptions = { questions: 1 };
+        sortOptions = { questions: -1 };
         break;
       case "recent":
-        sortOptions = { createdOn: -1 };
+        sortOptions = { createdAt: -1 };
         break;
       case "name":
         sortOptions = { name: 1 };
         break;
       case "old":
-        sortOptions = { createdOn: 1 };
+        sortOptions = { createdAt: 1 };
         break;
 
       default:
         break;
     }
 
-    const tags = await Tag.find(query).sort(sortOptions);
+    const tags = await Tag.find(query)
+      .sort(sortOptions)
+      .skip(skipAmount)
+      .limit(pageSize);
 
-    return { tags };
+    const totalTags = await Tag.countDocuments(query);
+
+    const isNext = totalTags > skipAmount + tags.length;
+
+    return { tags, isNext };
   } catch (error) {
     console.log(error);
     throw error;
@@ -96,11 +104,10 @@ export async function getQuestionsByTagId(params: GetQuestionsByTagIdParams) {
   try {
     connectToDatabase();
 
-    const { tagId, searchQuery } = params;
+    const { tagId, page = 1, pageSize = 2, searchQuery } = params;
+    const skipAmount = (page - 1) * pageSize;
 
-    const tagFilter: FilterQuery<ITag> = { _id: tagId };
-
-    const tag = await Tag.findOne(tagFilter).populate({
+    const tag = await Tag.findOne({ _id: tagId }).populate({
       path: "questions",
       model: Question,
       match: searchQuery
@@ -108,6 +115,8 @@ export async function getQuestionsByTagId(params: GetQuestionsByTagIdParams) {
         : {},
       options: {
         sort: { createdAt: -1 },
+        skip: skipAmount,
+        limit: pageSize, // +1 to check if there is next page
       },
       populate: [
         { path: "tags", model: Tag, select: "_id name" },
@@ -119,9 +128,17 @@ export async function getQuestionsByTagId(params: GetQuestionsByTagIdParams) {
       throw new Error("Tag not found");
     }
 
-    const questions = tag.questions;
+    const totalTagDetails = await Tag.findOne({ _id: tagId }).populate({
+      path: "questions",
+      match: searchQuery
+        ? { title: { $regex: searchQuery, $options: "i" } }
+        : {},
+    });
 
-    return { tagTitle: tag.name, questions };
+    const isNext =
+      totalTagDetails.questions.length > skipAmount + tag.questions.length;
+
+    return { tagTitle: tag.name, questions: tag.questions, isNext };
   } catch (error) {
     console.log(error);
     throw error;

@@ -18,6 +18,7 @@ import { useState } from "react";
 import { ProfileSchema } from "@/lib/validations";
 import { usePathname, useRouter } from "next/navigation";
 import { updateUser } from "@/lib/actions/user.action";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   clerkId: string;
@@ -25,6 +26,7 @@ interface Props {
 }
 
 const Profile = ({ clerkId, user }: Props) => {
+  const { toast } = useToast();
   const parsedUser = JSON.parse(user);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -56,7 +58,7 @@ const Profile = ({ clerkId, user }: Props) => {
         },
         path: pathname,
       });
-
+      toast({ title: "Profile edited successfully", variant: "default" });
       router.back();
     } catch (error) {
       console.log(error);

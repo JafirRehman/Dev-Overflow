@@ -17,6 +17,7 @@ import { useRef, useState } from "react";
 import { useTheme } from "@/context/ThemeProvider";
 import { Button } from "../ui/button";
 import { usePathname } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   question: string;
@@ -25,6 +26,7 @@ interface Props {
 }
 
 const Answer = ({ question, questionId, authorId }: Props) => {
+  const { toast } = useToast();
   const pathname = usePathname();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { mode } = useTheme();
@@ -54,6 +56,10 @@ const Answer = ({ question, questionId, authorId }: Props) => {
 
         editor.setContent("");
       }
+      toast({
+        title: "Answer submitted",
+        variant: "default",
+      });
     } catch (error) {
       console.log(error);
     } finally {

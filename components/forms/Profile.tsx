@@ -58,7 +58,7 @@ const Profile = ({ clerkId, user }: Props) => {
         },
         path: pathname,
       });
-      toast({ title: "Profile edited successfully", variant: "default" });
+      toast({ title: "Profile edited successfully" });
       router.back();
     } catch (error) {
       console.log(error);

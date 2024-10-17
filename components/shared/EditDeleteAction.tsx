@@ -36,7 +36,6 @@ const EditDeleteAction = ({ type, itemId }: Props) => {
     }
     return toast({
       title: `${type} Deleted`,
-      variant: "destructive",
     });
   };
 

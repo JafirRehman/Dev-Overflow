@@ -58,7 +58,6 @@ const Answer = ({ question, questionId, authorId }: Props) => {
       }
       toast({
         title: "Answer submitted",
-        variant: "default",
       });
     } catch (error) {
       console.log(error);

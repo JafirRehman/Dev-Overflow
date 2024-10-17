@@ -7,6 +7,12 @@ import { TagFilters } from "@/constants/filters";
 import Link from "next/link";
 import Pagination from "@/components/shared/pagination";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Tags | DevOverFlow",
+};
+
 const Page = async ({ searchParams }: SearchParamsProps) => {
   const result = await getAllTags({
     searchQuery: searchParams.q,

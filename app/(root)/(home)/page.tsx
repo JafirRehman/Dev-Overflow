@@ -9,6 +9,11 @@ import { HomePageFilters } from "@/constants/filters";
 import Link from "next/link";
 import { getQuestions } from "@/lib/actions/question.action";
 import Pagination from "@/components/shared/pagination";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Home | DevOverFlow",
+};
 
 export default async function Home({ searchParams }: SearchParamsProps) {
   const result = await getQuestions({

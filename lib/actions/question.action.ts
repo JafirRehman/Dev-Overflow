@@ -37,7 +37,7 @@ export async function getQuestions(params: GetQuestionsParams) {
   try {
     connectToDatabase();
 
-    const { searchQuery, filter, page = 1, pageSize = 2 } = params;
+    const { searchQuery, filter, page = 1, pageSize = 5 } = params;
 
     // Calculcate the number of posts to skip based on the page number and page size
     const skipAmount = (page - 1) * pageSize;
@@ -245,7 +245,6 @@ export async function deleteQuestion(params: DeleteQuestionParams) {
 
     const { questionId, path } = params;
 
-    await Question.deleteOne({ _id: questionId });
     await Answer.deleteMany({ question: questionId });
     await Interaction.deleteMany({ question: questionId });
     await Tag.updateMany(
@@ -256,6 +255,7 @@ export async function deleteQuestion(params: DeleteQuestionParams) {
       { saved: questionId },
       { $pull: { saved: questionId } }
     );
+    await Question.deleteOne({ _id: questionId });
 
     revalidatePath(path);
   } catch (error) {
@@ -269,7 +269,7 @@ export async function editQuestion(params: EditQuestionParams) {
 
     const { questionId, title, content, path } = params;
 
-    const question = await Question.findById(questionId).populate("tags");
+    const question = await Question.findById(questionId);
 
     if (!question) {
       throw new Error("Question not found");
@@ -290,7 +290,7 @@ export async function getRecommendedQuestions(params: RecommendedParams) {
   try {
     await connectToDatabase();
 
-    const { userId, page = 1, pageSize = 2, searchQuery } = params;
+    const { userId, page = 1, pageSize = 5, searchQuery } = params;
 
     // find user
     const user = await User.findOne({ clerkId: userId });
@@ -307,22 +307,21 @@ export async function getRecommendedQuestions(params: RecommendedParams) {
       .exec();
 
     // Extract tags from user's interactions
-    const userTags = userInteractions.reduce((tags, interaction) => {
-      if (interaction.tags) {
-        tags = tags.concat(interaction.tags);
-      }
-      return tags;
-    }, []);
+    const userTags: any[] = [];
 
-    // Get distinct tag IDs from user's interactions
-    const distinctUserTagIds = [
-      // @ts-ignore
-      ...new Set(userTags.map((tag: any) => tag._id)),
-    ];
+    userInteractions.forEach((interaction) => {
+      if (interaction.tags) {
+        interaction.tags.forEach((tag: any) => {
+          if (!userTags.includes(tag._id)) {
+            userTags.push(tag._id);
+          }
+        });
+      }
+    });
 
     const query: FilterQuery<typeof Question> = {
       $and: [
-        { tags: { $in: distinctUserTagIds } }, // Questions with user's tags
+        { tags: { $in: userTags } }, // Questions with user's tags
         { author: { $ne: user._id } }, // Exclude user's own questions
       ],
     };

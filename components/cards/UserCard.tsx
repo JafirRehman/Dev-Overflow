@@ -44,11 +44,16 @@ const UserCard = async ({ user }: Props) => {
           {interactedTags.length > 0 ? (
             <div className="flex items-center gap-2">
               {interactedTags.map((tag) => (
-                <RenderTag key={tag._id} _id={tag._id} name={tag.name} />
+                <RenderTag
+                  key={tag._id}
+                  _id={tag._id}
+                  name={tag.name}
+                  isTruncated={true}
+                />
               ))}
             </div>
           ) : (
-            <Badge>No tags yet</Badge>
+            <Badge className="text-dark500_light500">No tags yet</Badge>
           )}
         </div>
       </article>

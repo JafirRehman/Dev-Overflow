@@ -19,6 +19,7 @@ import Tag from "@/database/tag.model";
 import Answer from "@/database/answer.model";
 import { BadgeCriteriaType } from "@/types";
 import { assignBadges } from "../utils";
+import Interaction from "@/database/interaction.model";
 
 export async function getUserById(params: any) {
   try {
@@ -47,7 +48,7 @@ export async function createUser(userData: CreateUserParams) {
     throw error;
   }
 }
-
+// ----------------------------------------------------------------------------------------------------->
 export async function getUserInfo(params: GetUserByIdParams) {
   try {
     connectToDatabase();
@@ -160,22 +161,31 @@ export async function deleteUser(params: DeleteUserParams) {
 
     const { clerkId } = params;
 
-    const user = await User.findOneAndDelete({ clerkId });
+    const user = await User.findOne({ clerkId });
 
     if (!user) {
       throw new Error("User not found");
     }
 
-    // Delete user from database
-    // and questions, answers, comments, etc.
+    await Question.updateMany(
+      { $or: [{ upvotes: user._id }, { downvotes: user._id }] },
+      {
+        $pull: { upvotes: user._id, downvotes: user._id },
+      }
+    );
 
-    // get user question ids
-    // const userQuestionIds = await Question.find({ author: user._id}).distinct('_id');
+    await Answer.updateMany(
+      { $or: [{ upvotes: user._id }, { downvotes: user._id }] },
+      {
+        $pull: { upvotes: user._id, downvotes: user._id },
+      }
+    );
 
-    // delete user questions
     await Question.deleteMany({ author: user._id });
 
-    // TODO: delete user answers, comments, etc.
+    await Answer.deleteMany({ author: user._id });
+
+    await Interaction.deleteMany({ user: user._id });
 
     const deletedUser = await User.findByIdAndDelete(user._id);
 
@@ -190,7 +200,7 @@ export async function getAllUsers(params: GetAllUsersParams) {
   try {
     connectToDatabase();
 
-    const { searchQuery, filter, page = 1, pageSize = 2 } = params;
+    const { searchQuery, filter, page = 1, pageSize = 5 } = params;
     const skipAmount = (page - 1) * pageSize;
 
     const query: FilterQuery<typeof User> = {};
@@ -275,7 +285,7 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
   try {
     connectToDatabase();
 
-    const { clerkId, searchQuery, filter, page = 1, pageSize = 2 } = params;
+    const { clerkId, searchQuery, filter, page = 1, pageSize = 5 } = params;
 
     // Calculate the number of posts to skip based on the page number and page size
     const skipAmount = (page - 1) * pageSize;
@@ -308,6 +318,7 @@ export async function getSavedQuestions(params: GetSavedQuestionsParams) {
     // Fetch the saved questions using pagination
     const user = await User.findOne({ clerkId }).populate({
       path: "saved",
+      model: Question,
       match: query,
       options: {
         sort: sortOptions,
@@ -346,7 +357,7 @@ export async function getUserQuestions(params: GetUserStatsParams) {
   try {
     connectToDatabase();
 
-    const { userId, page = 1, pageSize = 2 } = params;
+    const { userId, page = 1, pageSize = 5 } = params;
 
     const skipAmount = (page - 1) * pageSize;
 
@@ -354,8 +365,12 @@ export async function getUserQuestions(params: GetUserStatsParams) {
       .sort({ createdAt: -1, views: -1, upvotes: -1 })
       .skip(skipAmount)
       .limit(pageSize)
-      .populate("tags", "_id name")
-      .populate("author", "_id clerkId name picture");
+      .populate({ path: "tags", model: Tag, select: "_id name" })
+      .populate({
+        path: "author",
+        model: User,
+        select: "_id clerkId name picture",
+      });
 
     const totalQuestions = await Question.countDocuments({ author: userId });
 
@@ -372,7 +387,7 @@ export async function getUserAnswers(params: GetUserStatsParams) {
   try {
     connectToDatabase();
 
-    const { userId, page = 1, pageSize = 2 } = params;
+    const { userId, page = 1, pageSize = 5 } = params;
 
     const skipAmount = (page - 1) * pageSize;
 
@@ -380,8 +395,12 @@ export async function getUserAnswers(params: GetUserStatsParams) {
       .sort({ upvotes: -1 })
       .skip(skipAmount)
       .limit(pageSize)
-      .populate("question", "_id title")
-      .populate("author", "_id clerkId name picture");
+      .populate({ path: "question", model: Question, select: "_id title" })
+      .populate({
+        path: "author",
+        model: User,
+        select: "_id clerkId name picture",
+      });
 
     const totalAnswers = await Answer.countDocuments({ author: userId });
 
@@ -393,12 +412,3 @@ export async function getUserAnswers(params: GetUserStatsParams) {
     throw error;
   }
 }
-
-// export async function getAllUsers(params: GetAllUsersParams) {
-//   try {
-//     connectToDatabase();
-//   } catch (error) {
-//     console.log(error);
-//     throw error;
-//   }
-// }

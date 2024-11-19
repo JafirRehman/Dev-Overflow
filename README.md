@@ -27,6 +27,41 @@ We need to install or make sure that these tools are pre-installed on your machi
 
 - [Git](https://git-scm.com/downloads): It is an open source version control system.
 
+### 🚀 Install Project
+
+1. Clone the Repository
+
+```bash
+git clone https://github.com/JafirRehman/Dev-Overflow.git
+```
+
+2. Install packages
+
+```
+npm install
+```
+
+3. create a `.env.local` file add necessary credencitals
+
+```bash
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=
+WEBHOOK_SECRET=
+NEXT_PUBLIC_TINY_EDITOR_API_KEY=
+MONGODB_URL=
+```
+
+4. Run the project using command below
+
+```bash
+npm run dev
+```
+
 ## Key Features
 
 - Ask questions and answer questions.

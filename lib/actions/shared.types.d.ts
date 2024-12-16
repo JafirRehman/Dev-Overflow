@@ -2,7 +2,6 @@ import { Schema } from "mongoose";
 
 import { IUser } from "@/mongodb";
 
-// collapse(1:159)
 export interface CreateAnswerParams {
   content: string;
   author: string; // User ID
@@ -127,7 +126,7 @@ export interface GetAllUsersParams {
   page?: number;
   pageSize?: number;
   filter?: string;
-  searchQuery?: string; // Add searchQuery parameter
+  searchQuery?: string;
 }
 
 export interface UpdateUserParams {

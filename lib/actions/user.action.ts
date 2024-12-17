@@ -96,7 +96,7 @@ export async function getUserInfo(params: GetUserByIdParams) {
       },
     ]);
 
-    const [questionViews] = await Answer.aggregate([
+    const [questionViews] = await Question.aggregate([
       { $match: { author: user._id } },
       {
         $group: {
